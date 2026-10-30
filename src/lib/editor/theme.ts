@@ -1,0 +1,236 @@
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { EditorView } from "@codemirror/view";
+import { tags as t } from "@lezer/highlight";
+import { hashtagTag, mathTag, wikiLinkTag } from "./markdownExt";
+
+/** Colors come from CSS variables, so one theme serves light and dark. */
+export const editorTheme = EditorView.theme({
+  "&": {
+    height: "100%",
+    fontSize: "var(--editor-font-size)",
+    color: "var(--label)",
+    backgroundColor: "transparent",
+  },
+  "&.cm-focused": { outline: "none" },
+  ".cm-scroller": {
+    fontFamily: "var(--font)",
+    lineHeight: "1.68",
+    overflowX: "hidden",
+  },
+  ".cm-content": {
+    maxWidth: "var(--content-width, none)",
+    margin: "0 auto",
+    padding: "4px 48px 45vh",
+    caretColor: "var(--accent)",
+    userSelect: "text",
+    WebkitUserSelect: "text",
+  },
+  ".cm-line": { padding: "0 2px" },
+  ".cm-cursor, .cm-dropCursor": { borderLeft: "2px solid var(--accent)", marginLeft: "-1px" },
+  "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
+    { background: "var(--selection) !important" },
+  ".cm-gutters": { display: "none" },
+  ".cm-placeholder": { color: "var(--label-3)" },
+
+  // Headings
+  ".cm-lp-h": { fontFamily: "var(--font-display)", fontWeight: "700", letterSpacing: "-0.012em" },
+  ".cm-lp-h1": { fontSize: "1.85em", lineHeight: "1.25", paddingTop: "0.55em", paddingBottom: "0.1em" },
+  ".cm-lp-h2": { fontSize: "1.45em", lineHeight: "1.3", paddingTop: "0.5em" },
+  ".cm-lp-h3": { fontSize: "1.2em", lineHeight: "1.35", paddingTop: "0.45em" },
+  ".cm-lp-h4": { fontSize: "1.05em", paddingTop: "0.35em" },
+  ".cm-lp-h5, .cm-lp-h6": { fontSize: "1em", color: "var(--label-2)", paddingTop: "0.3em" },
+
+  // Inline elements
+  ".cm-lp-inline-code": {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.86em",
+    background: "var(--code-bg)",
+    borderRadius: "5px",
+    padding: "0.12em 0.32em",
+  },
+  ".cm-lp-link, .cm-lp-wikilink": { color: "var(--accent)", cursor: "pointer", textDecoration: "none" },
+  ".cm-lp-link:hover, .cm-lp-wikilink:hover": { textDecoration: "underline", textUnderlineOffset: "3px" },
+  ".cm-lp-embed": { fontStyle: "italic" },
+  ".cm-lp-task-done": { color: "var(--label-3)", textDecoration: "line-through" },
+  ".cm-lp-bullet": { color: "var(--label-3)", display: "inline-block", width: "0.6em", fontWeight: "700" },
+  ".cm-lp-checkbox": {
+    display: "inline-block",
+    width: "1.05em",
+    height: "1.05em",
+    marginRight: "0.4em",
+    verticalAlign: "-0.17em",
+    borderRadius: "50%",
+    border: "1.5px solid var(--label-3)",
+    cursor: "pointer",
+    transition: "background 150ms, border-color 150ms",
+    boxSizing: "border-box",
+  },
+  ".cm-lp-checkbox.checked": {
+    background: "var(--accent) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E\") center/72% no-repeat",
+    borderColor: "var(--accent)",
+  },
+  ".cm-lp-hr": {
+    display: "inline-block",
+    width: "100%",
+    height: "1px",
+    verticalAlign: "middle",
+    background: "var(--separator-strong)",
+  },
+  ".cm-lp-image": { display: "inline-block", maxWidth: "100%", padding: "4px 0" },
+  ".cm-lp-image img": {
+    display: "block",
+    maxWidth: "100%",
+    borderRadius: "var(--r)",
+    boxShadow: "var(--shadow-sm)",
+  },
+  ".cm-lp-image.missing": { color: "var(--red)", fontSize: "0.9em" },
+
+  // Math: KaTeX in place of $…$ / $$…$$; monospace source while editing.
+  ".cm-lp-math": { padding: "0 1px" },
+  ".cm-lp-math .katex": { fontSize: "1.08em" },
+  ".cm-lp-math-block": { display: "block", padding: "8px 0", textAlign: "center", overflowX: "auto", overflowY: "hidden" },
+  ".cm-lp-math-block .katex": { fontSize: "1.12em" },
+  ".cm-lp-math-src, .cm-lp-math-src-block": { fontFamily: "var(--font-mono)", fontSize: "0.92em" },
+
+  // Embedded notes (![[Note]]) reuse the reading view's card.
+  ".cm-lp-embed-note": { display: "block", padding: "2px 0", cursor: "text", whiteSpace: "normal" },
+  ".cm-lp-embed-note.missing": { color: "var(--red)", fontSize: "0.9em" },
+
+  // Blocks
+  ".cm-lp-code": {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.86em",
+    lineHeight: "1.55",
+    background: "var(--code-bg)",
+    padding: "0 14px !important",
+  },
+  ".cm-lp-code-first": { borderTopLeftRadius: "var(--r)", borderTopRightRadius: "var(--r)", paddingTop: "8px !important" },
+  ".cm-lp-code-last": { borderBottomLeftRadius: "var(--r)", borderBottomRightRadius: "var(--r)", paddingBottom: "8px !important" },
+  ".cm-lp-quote": {
+    borderLeft: "3px solid var(--separator-strong)",
+    paddingLeft: "14px !important",
+    color: "var(--label-2)",
+  },
+  ".cm-lp-callout": {
+    color: "var(--label)",
+    background: "color-mix(in srgb, var(--callout, var(--accent)) 10%, transparent)",
+    borderLeft: "3px solid var(--callout, var(--accent))",
+    padding: "1px 14px !important",
+  },
+  ".cm-lp-callout-first": { borderTopRightRadius: "var(--r)", paddingTop: "8px !important", fontWeight: "600", color: "var(--callout, var(--accent))" },
+  ".cm-lp-callout-last": { borderBottomRightRadius: "var(--r)", paddingBottom: "8px !important" },
+  ".cm-lp-callout-tip, .cm-lp-callout-success, .cm-lp-callout-check, .cm-lp-callout-done": { "--callout": "var(--green)" },
+  ".cm-lp-callout-warning, .cm-lp-callout-caution, .cm-lp-callout-attention": { "--callout": "var(--orange)" },
+  ".cm-lp-callout-danger, .cm-lp-callout-error, .cm-lp-callout-bug, .cm-lp-callout-failure": { "--callout": "var(--red)" },
+  ".cm-lp-callout-important, .cm-lp-callout-question, .cm-lp-callout-help, .cm-lp-callout-faq": { "--callout": "var(--purple)" },
+  ".cm-lp-callout-quote, .cm-lp-callout-cite, .cm-lp-callout-example": { "--callout": "var(--graphite)" },
+  ".cm-lp-table": { fontFamily: "var(--font-mono)", fontSize: "0.86em" },
+  ".cm-lp-frontmatter": {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.8em",
+    color: "var(--label-2)",
+    background: "var(--fill-3)",
+    padding: "0 14px !important",
+  },
+  ".cm-lp-frontmatter *": { color: "inherit !important", fontWeight: "inherit !important", background: "none !important" },
+  ".cm-lp-frontmatter-first": { borderTopLeftRadius: "var(--r)", borderTopRightRadius: "var(--r)", paddingTop: "6px !important" },
+  ".cm-lp-frontmatter-last": { borderBottomLeftRadius: "var(--r)", borderBottomRightRadius: "var(--r)", paddingBottom: "6px !important", marginBottom: "8px" },
+
+  // Search panel
+  ".cm-panels": { backgroundColor: "transparent", border: "none" },
+  ".cm-panels-top": { borderBottom: "none" },
+  ".cm-search": {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: "6px",
+    margin: "0 auto 6px",
+    maxWidth: "640px",
+    padding: "8px 10px",
+    borderRadius: "var(--r-lg)",
+    background: "var(--glass-strong)",
+    backdropFilter: "blur(24px) saturate(180%)",
+    boxShadow: "var(--shadow)",
+    fontFamily: "var(--font)",
+    fontSize: "12px",
+    position: "relative",
+  },
+  ".cm-search input.cm-textfield": {
+    height: "26px",
+    border: "0",
+    borderRadius: "7px",
+    background: "var(--fill-2)",
+    padding: "0 8px",
+    outline: "none",
+    fontSize: "12px",
+  },
+  ".cm-search input.cm-textfield:focus": { boxShadow: "0 0 0 2px var(--accent-tint-strong)" },
+  ".cm-search .cm-button": {
+    height: "26px",
+    border: "0",
+    borderRadius: "7px",
+    background: "var(--fill)",
+    backgroundImage: "none",
+    padding: "0 10px",
+    fontSize: "12px",
+  },
+  ".cm-search label": { display: "inline-flex", alignItems: "center", gap: "4px", color: "var(--label-2)" },
+  ".cm-search button[name=close]": {
+    position: "absolute",
+    right: "8px",
+    top: "6px",
+    border: "0",
+    background: "transparent",
+    fontSize: "18px",
+    color: "var(--label-3)",
+  },
+  ".cm-searchMatch": { backgroundColor: "var(--mark)", borderRadius: "2px" },
+  ".cm-searchMatch-selected": { backgroundColor: "color-mix(in srgb, var(--orange) 55%, transparent)" },
+
+  // Autocomplete
+  ".cm-tooltip": { border: "none", backgroundColor: "transparent" },
+  ".cm-tooltip.cm-tooltip-autocomplete": {
+    borderRadius: "var(--r-lg)",
+    background: "var(--glass-strong)",
+    backdropFilter: "blur(24px) saturate(180%)",
+    boxShadow: "var(--shadow-lg)",
+    padding: "5px",
+    overflow: "hidden",
+  },
+  ".cm-tooltip.cm-tooltip-autocomplete > ul": { fontFamily: "var(--font)", maxHeight: "16em", minWidth: "240px" },
+  ".cm-tooltip.cm-tooltip-autocomplete > ul > li": {
+    padding: "5px 10px !important",
+    borderRadius: "7px",
+    fontSize: "13px",
+    lineHeight: "1.35",
+  },
+  ".cm-tooltip-autocomplete ul li[aria-selected]": { background: "var(--accent) !important", color: "#fff" },
+  ".cm-tooltip-autocomplete ul li[aria-selected] .cm-completionDetail": { color: "rgba(255,255,255,.75)" },
+  ".cm-completionDetail": { marginLeft: "10px", color: "var(--label-3)", fontStyle: "normal", fontSize: "11.5px" },
+  ".cm-completionIcon": { display: "none" },
+  ".cm-completionMatchedText": { textDecoration: "none", fontWeight: "600" },
+});
+
+const highlight = HighlightStyle.define([
+  { tag: t.heading, fontWeight: "700" },
+  { tag: t.strong, fontWeight: "700" },
+  { tag: t.emphasis, fontStyle: "italic" },
+  { tag: t.strikethrough, textDecoration: "line-through", color: "var(--label-2)" },
+  { tag: [t.link, wikiLinkTag], color: "var(--accent)" },
+  { tag: t.url, color: "var(--label-3)" },
+  { tag: t.monospace, fontFamily: "var(--font-mono)" },
+  { tag: [t.processingInstruction, t.contentSeparator], color: "var(--label-3)" },
+  { tag: mathTag, color: "var(--syn-function)" },
+  { tag: hashtagTag, color: "var(--accent)", backgroundColor: "var(--accent-tint)", borderRadius: "999px", padding: "0.05em 0.45em" },
+  // Code inside fenced blocks
+  { tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword], color: "var(--syn-keyword)", fontWeight: "600" },
+  { tag: [t.string, t.special(t.string), t.regexp], color: "var(--syn-string)" },
+  { tag: [t.comment, t.lineComment, t.blockComment], color: "var(--syn-comment)", fontStyle: "italic" },
+  { tag: [t.number, t.bool, t.null, t.atom], color: "var(--syn-number)" },
+  { tag: [t.typeName, t.className, t.namespace], color: "var(--syn-type)" },
+  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "var(--syn-function)" },
+  { tag: [t.attributeName, t.propertyName, t.meta], color: "var(--syn-attr)" },
+  { tag: t.tagName, color: "var(--syn-keyword)" },
+]);
+
+export const editorHighlighting = syntaxHighlighting(highlight);

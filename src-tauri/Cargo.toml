@@ -1,0 +1,30 @@
+[package]
+name = "asteroid"
+description = "A light, fast Markdown notes app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "asteroid_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+asteroid-core.workspace = true
+asteroid-sync.workspace = true
+asteroid-git.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+notify = "8"
+walkdir = "2"
+tauri-plugin-clipboard-manager = "2"
+gethostname = "1"

@@ -1,0 +1,22 @@
+# Build output and dependencies
+/target
+/node_modules
+/dist
+
+# Generated: pdf.js runtime assets (scripts/copy-pdfjs-assets.mjs) and Tauri schemas
+/public/pdfjs
+/src-tauri/gen
+
+# Local reference binaries (not ours to redistribute)
+*.AppImage
+
+# Environment and secrets
+.env
+.env.*
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+*.log

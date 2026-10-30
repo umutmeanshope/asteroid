@@ -1,0 +1,20 @@
+[package]
+name = "asteroid-git"
+description = "Git sync for vaults (commit, fetch, merge, push) and GitHub sign-in"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+reqwest = { version = "0.13", features = ["json", "form", "query"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+walkdir = "2"
+git2 = { version = "0.21.0", default-features = false, features = ["https"] }
+
+[dev-dependencies]
+tempfile = "3"
