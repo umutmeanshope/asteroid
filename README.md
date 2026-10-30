@@ -1,137 +1,199 @@
-# Asteroid
+<p align="center">
+  <img src="assets/icon.svg" width="96" alt="Asteroid logo">
+</p>
 
-A light, fast Markdown notes app in the spirit of Obsidian: plain `.md` files in a
-folder ("vault"), wikilinks, backlinks, live preview, a PDF reader, and sync through
-Google Drive or GitHub. Rust core, Tauri 2 shell, Svelte 5 UI styled after Apple's design language.
+<h1 align="center">Asteroid</h1>
 
-## Run
+<p align="center">
+  A light, fast Markdown notes app. Plain files in a folder, a calm editor, and sync on your terms.
+</p>
+
+<p align="center">
+  <a href="../../releases/latest"><b>Download</b></a> ·
+  <a href="#install">Install</a> ·
+  <a href="#sync">Sync</a> ·
+  <a href="#build-from-source">Build from source</a>
+</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
+  <img src="docs/screenshot-light.png" alt="Asteroid showing a note with tasks, a callout and math, the file tree on the left and the outline on the right">
+</picture>
+
+Asteroid keeps your notes as ordinary Markdown files in a folder — a **vault** — so they stay
+yours: readable by any editor, easy to back up, nothing to export. It opens existing Obsidian
+vaults as they are.
+
+## Features
+
+**Writing**
+- Live preview: Markdown renders as you type and shows its syntax only on the line you're editing
+- `[[Wikilinks]]` with autocomplete, `#tags`, callouts, task lists, tables and frontmatter properties
+- Embeds: `![[Note]]`, `![[Note#Heading]]` and `![[Note#^block]]` render inline; images too
+- Math with KaTeX: `$inline$` and `$$display$$`
+- Links follow along when you rename or move notes and folders
+
+**Finding**
+- Full-text search with tag filters, a quick switcher and a command palette
+- Outline and backlinks for every note
+- A built-in PDF reader with find-in-document and a table of contents
+
+**Sync** (optional, pick one per vault)
+- **Google Drive** — files sync as they are; edits made on two devices at once keep both copies
+- **GitHub** — full history, automatic merging of edits to different parts of a note, version
+  history with restore, recently deleted files, and per-type "don't sync" rules (e.g. PDFs)
+
+**Feel**
+- Apple-inspired design with translucent panels, light and dark themes and accent colours
+- Small and quick: a Rust core with a native webview, not a bundled browser
+
+## Install
+
+Download the file for your system from the [latest release](../../releases/latest).
+
+| System | File |
+|---|---|
+| Windows 10/11 | `Asteroid_x.y.z_x64-setup.exe` (or the `.msi`) |
+| macOS — Apple Silicon | `Asteroid_x.y.z_aarch64.dmg` |
+| macOS — Intel | `Asteroid_x.y.z_x64.dmg` |
+| Linux — any distro | `Asteroid_x.y.z_amd64.AppImage` |
+| Linux — Debian, Ubuntu, Mint | `Asteroid_x.y.z_amd64.deb` |
+| Linux — Fedora, openSUSE | `Asteroid-x.y.z-1.x86_64.rpm` |
+
+The builds aren't code-signed yet, so Windows and macOS ask once before the first launch.
+
+<details>
+<summary><b>Windows</b></summary>
+
+Run the installer. If SmartScreen shows "Windows protected your PC", click **More info →
+Run anyway**. Asteroid installs for your user only, so no administrator rights are needed.
+</details>
+
+<details>
+<summary><b>macOS</b></summary>
+
+Open the `.dmg` and drag **Asteroid** into **Applications**. On first launch macOS says it
+can't verify the developer: open **System Settings › Privacy & Security**, scroll down and
+click **Open Anyway**. If macOS instead reports the app as damaged, clear the download flag
+once in Terminal:
 
 ```sh
-npm install
-npm run tauri dev      # development
-npm run tauri build    # release bundles (AppImage/deb/rpm on Linux)
+xattr -cr /Applications/Asteroid.app
 ```
+</details>
 
-Requires Rust ≥ 1.90, Node ≥ 20 and the [Tauri Linux prerequisites](https://tauri.app/start/prerequisites/)
-(WebKitGTK 4.1).
+<details>
+<summary><b>Linux</b></summary>
+
+AppImage — make it executable and run it:
 
 ```sh
-cargo test --workspace   # core, Drive sync and git sync tests
-npm run check            # Svelte/TypeScript checks
+chmod +x Asteroid_*.AppImage
+./Asteroid_*.AppImage
 ```
 
-## Google Drive setup
+Debian/Ubuntu: `sudo apt install ./Asteroid_*_amd64.deb` · Fedora: `sudo dnf install ./Asteroid-*.x86_64.rpm`
 
-Sync uses your own Google OAuth client:
+Arch and others: use the AppImage, or [build from source](#build-from-source).
+</details>
 
-1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and
-   enable the **Google Drive API**.
+## Sync
+
+Sync is optional. Open **Settings › Sync**, connect an account, and choose where the open
+vault syncs to. On another device, use **Open from Google Drive** or **Open from GitHub** on
+the welcome screen to download it.
+
+Sign-in uses an OAuth app. Release builds may come with one built in; if Settings › Sync
+asks for a client ID, create your own (free, a few minutes) and paste it under
+**Developer credentials**:
+
+<details>
+<summary><b>Google Drive client ID</b></summary>
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable
+   the **Google Drive API**.
 2. Configure the OAuth consent screen and add your account as a test user.
-3. Create an OAuth client ID of type **Desktop app**.
-4. In Asteroid open **Settings › Sync** and paste the client ID (and secret), or set
-   `ASTEROID_GOOGLE_CLIENT_ID` / `ASTEROID_GOOGLE_CLIENT_SECRET` at build or run time.
-5. Click **Connect**: sign-in happens in your browser (PKCE, loopback redirect).
+3. Create an OAuth client ID of type **Desktop app** and paste its ID (and secret) into
+   Asteroid. Sign-in then happens in your browser.
+</details>
 
-Then either link the open vault to a Drive folder (Settings › Sync) or use
-**Open from Google Drive** on the welcome screen to download a vault onto a new device.
+<details>
+<summary><b>GitHub client ID</b></summary>
 
-## Links, embeds and math
+1. On GitHub go to **Settings › Developer settings › OAuth Apps › New OAuth App**. Any
+   homepage and callback URL will do.
+2. Tick **Enable Device Flow** and save; no secret is needed.
+3. Paste the client ID into Asteroid, click **Connect**, and enter the code shown on github.com.
 
-- **Renaming or moving** a file or folder rewrites links that would otherwise break —
-  `[[wikilinks]]`, `![[embeds]]`, `[markdown](links.md)` and links in frontmatter — keeping
-  each link's style, heading and alias. Links that still resolve (a bare `[[Note]]` after a
-  folder move) are left as written; markdown links that were correct relative paths stay
-  correct paths. Settings › Editor › *Update links when renaming* turns this off.
-- **Embeds**: `![[Note]]`, `![[Note#Heading]]` (the section, with its subsections) and
-  `![[Note#^block-id]]` render inline in reading view and live preview, up to three levels
-  deep, with loops shown as links.
-- **Math**: `$inline$` and `$$display$$` (inline, or on their own lines) are typeset with
-  KaTeX, loaded only when a note has math. `$5 and $6` stays text (Pandoc's rules).
+Sign-in asks for the `repo` scope (access to your repositories, including private ones).
+GitHub works best for vaults under about 1 GB; Asteroid shows the vault's size, warns
+about large files, and lets you leave file types such as PDFs out of sync.
+</details>
 
-## GitHub setup
+<details>
+<summary><b>How sync handles conflicts</b></summary>
 
-Git sync signs in with GitHub's device flow, which needs only a client ID:
+**Google Drive** compares each file with the version from the last sync. Changes on one side
+are copied over; changes on both sides keep both, the other one saved as
+`Note (conflict YYYY-MM-DD HHMM).md`. Deleted files go to the trash on both sides, and a
+sync that would delete more than half the vault asks first.
 
-1. On GitHub open **Settings › Developer settings › OAuth Apps › New OAuth App**. Any
-   homepage and callback URL will do (the device flow doesn't use them).
-2. Tick **Enable Device Flow** and save. No client secret is needed.
-3. In Asteroid open **Settings › Sync** and paste the client ID, or set
-   `ASTEROID_GITHUB_CLIENT_ID` at build or run time.
-4. Click **Connect** next to GitHub, then enter the code shown on github.com.
+**GitHub** commits every change, then merges what other devices pushed. Edits to different
+lines merge on their own; when two devices change the same lines, the other version is kept
+as a conflict copy — no conflict markers are ever written into notes. Every synced version
+stays in the history, where you can compare and restore it.
+</details>
 
-Then link the open vault to a repository (an existing one, or a new private one created
-from the picker), or use **Open from GitHub** on the welcome screen to clone a vault onto
-a new device. The sign-in asks for the `repo` scope (read/write access to your
-repositories, including private ones).
+## Build from source
 
-## Layout
+You need [Rust](https://rustup.rs) 1.90 or newer, [Node.js](https://nodejs.org) 20.19 or
+newer, and the [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your system
+(on Linux: WebKitGTK 4.1 and its development packages).
 
-```
-crates/asteroid-core   Vault file ops, Markdown parsing, index (search, backlinks,
-                        tags, link resolution), HTML rendering. No UI dependencies.
-crates/asteroid-sync   Three-way sync engine + Google Drive backend.
-crates/asteroid-git    Git sync (libgit2: commit, fetch, merge, push) + GitHub sign-in.
-src-tauri               Thin Tauri shell: commands, file watcher, settings storage.
-src                     Svelte UI: CodeMirror 6 live-preview editor, pdf.js viewer.
+```sh
+git clone <this repository>
+cd asteroid
+npm install
+npm run tauri dev     # run in development
+npm run tauri build   # build installers into target/release/bundle/
 ```
 
-The core and sync crates (`asteroid-core`, `asteroid-sync`, `asteroid-git`) have no Tauri dependency so the planned iOS and Android apps
-can reuse them; `src-tauri` is already set up as a mobile-capable library
-(`tauri::mobile_entry_point`), and mobile icons are generated in `src-tauri/icons`.
+On Arch-based distributions, run the build as `NO_STRIP=true npm run tauri build` if the
+AppImage step fails.
 
-### How sync works
+## Development
 
-Each sync compares, per file, the local content hash, the Drive `md5Checksum`, and the
-hash recorded at the last successful sync (`.asteroid/sync-state.json`). One-sided
-changes are copied; edits on both sides keep both versions (the local one is saved as
-`Note (conflict YYYY-MM-DD HHMM).md`); deletions go to the vault's `.trash` locally and
-to Drive's trash remotely. A sync that would delete more than half the vault is refused
-unless confirmed.
+```sh
+cargo test --workspace                  # Rust tests
+cargo clippy --workspace --all-targets  # lints
+npm run check                           # Svelte and TypeScript checks
+```
 
-### How git sync works
+```
+crates/asteroid-core   Vault files, Markdown parsing, search index, link updates, rendering
+crates/asteroid-sync   Google Drive sync engine
+crates/asteroid-git    Git sync, GitHub sign-in, history and "don't sync" rules
+src-tauri              Desktop shell: commands, file watcher, settings
+src                    Svelte UI: CodeMirror editor, pdf.js reader
+```
 
-A git-synced vault is an ordinary repository. Each sync:
+The `crates/` have no UI dependency, so the planned iOS and Android apps can share them.
 
-1. commits every change in the vault (`Asteroid: 3 files changed on <device>`),
-2. fetches the branch from GitHub,
-3. fast-forwards, or merges when both sides have new commits. Edits to different parts
-   of a note merge automatically; when both sides changed the same lines, this device's
-   version stays and the other is saved as `Note (conflict YYYY-MM-DD HHMM).md`. No
-   conflict markers are ever written into notes. An edit beats a deletion.
-4. pushes, retrying if another device pushed in the meantime.
+**Releasing:** set the version, tag it and push; GitHub Actions builds the installers for all
+three systems and opens a draft release to review and publish.
 
-`.asteroid/` and `.trash/` are kept out of commits through `.git/info/exclude`, so the
-vault's own `.gitignore` is left alone. A folder that's already a repository keeps its
-branch; one whose `origin` points somewhere else is refused rather than repointed.
-HTTPS only for now (no SSH).
+```sh
+node scripts/bump-version.mjs 0.2.0
+cargo check && git commit -am "Release 0.2.0"
+git tag v0.2.0 && git push origin main v0.2.0
+```
 
-**Don't sync** (Settings › Sync, or right-click a file or folder): file types (PDF, Word,
-spreadsheets, images, …), custom extensions, and single files or folders can be left out.
-Asteroid keeps these rules in a marked block of the vault's `.gitignore` (case-insensitive
-patterns; lines you wrote yourself are left alone), so every device applies them. Files
-that were already synced stop being tracked but stay on disk — on the device that
-excluded them and on every other device, where the incoming removal is recognised and the
-local copy kept. They remain in the repository's history.
+## Roadmap
 
-### Version history
-
-Vaults that are git repositories get **Version History…** (toolbar ⋯ menu, a file's
-context menu, or the command palette) and **Recently Deleted…** (vault menu). History
-lists every synced version of a note with what it changed, compares any version with the
-current one, previews it, and restores it. A restore is written as a normal edit, so the
-next sync records it and it can itself be undone. Edits not yet synced aren't in history;
-restoring over them asks first.
-
-## Not yet done
-
-- Mobile shells (iOS/Android) — Google sign-in will need a custom-scheme redirect
-  instead of the desktop loopback flow (GitHub's device flow already works as is).
-- Reading-view code highlighting, searching inside PDFs from the vault-wide search.
-- Drive changes are found by listing the vault folder; very large vaults would benefit
-  from the Drive Changes API.
-- The full `drive` scope is used so existing folders are visible; a published app
-  should move to `drive.file` + Google Picker to avoid restricted-scope review.
+- iOS and Android apps
+- Searching inside PDFs from the vault-wide search
+- Code highlighting in reading view
 
 ## License
 
-[MIT](LICENSE). Asteroid is an independent project, not affiliated with Obsidian.
+[MIT](LICENSE). Asteroid is an independent project and isn't affiliated with Obsidian.

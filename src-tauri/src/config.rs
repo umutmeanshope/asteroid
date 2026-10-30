@@ -53,7 +53,8 @@ pub fn credential(app: &AppHandle, key: &str, env: &str, built: Option<&'static 
         .filter(|s| !s.is_empty())
         .map(String::from)
         .or_else(|| std::env::var(env).ok().filter(|s| !s.is_empty()))
-        .or_else(|| built.map(String::from))
+        // CI passes unset secrets as empty strings, so empty means "not built in".
+        .or_else(|| built.filter(|s| !s.is_empty()).map(String::from))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

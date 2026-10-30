@@ -40,6 +40,27 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "umutmeanshope",
+    "copyright": "Copyright © 2026 umutmeanshope. MIT License.",
+    "longDescription": "Asteroid is a light, fast Markdown notes app: plain .md files in a folder, wikilinks, backlinks, live preview, a PDF reader, and sync through Google Drive or GitHub.",
+    "licenseFile": "../LICENSE",
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "signingIdentity": "-"
+    },
+    "linux": {
+      "deb": {
+        "section": "editors"
+      },
+      "rpm": {
+        "release": "1"
+      }
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   }
 }

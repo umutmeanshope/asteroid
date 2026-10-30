@@ -14,7 +14,11 @@ tokio.workspace = true
 reqwest = { version = "0.13", features = ["json", "form", "query"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 walkdir = "2"
-git2 = { version = "0.21.0", default-features = false, features = ["https"] }
+# Vendored libgit2 and OpenSSL are compiled in, so the app never links whatever
+# versions the build machine has installed: a .deb built against the distro's
+# libgit2 1.9 wouldn't start on systems shipping another version. (macOS and
+# Windows use their native TLS and ignore vendored-openssl.)
+git2 = { version = "0.21.0", default-features = false, features = ["https", "vendored-libgit2", "vendored-openssl"] }
 
 [dev-dependencies]
 tempfile = "3"
