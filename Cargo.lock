@@ -82,7 +82,7 @@ dependencies = [
 
 [[package]]
 name = "asteroid"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "asteroid-core",
  "asteroid-git",
@@ -103,7 +103,7 @@ dependencies = [
 
 [[package]]
 name = "asteroid-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ammonia",
  "pulldown-cmark",
@@ -117,7 +117,7 @@ dependencies = [
 
 [[package]]
 name = "asteroid-git"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "git2",
@@ -132,7 +132,7 @@ dependencies = [
 
 [[package]]
 name = "asteroid-sync"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "asteroid-core",
  "base64 0.22.1",
