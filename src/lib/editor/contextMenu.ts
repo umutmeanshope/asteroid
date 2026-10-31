@@ -9,6 +9,19 @@ import { copyText, pasteText } from "../clipboard";
 import { type MenuItem, showMenu } from "../menu.svelte";
 import { shortcutLabel as shortcut } from "../util";
 import { toggleTask, toggleWrap } from "./commands";
+import {
+  type Align,
+  type TableAt,
+  addColumn,
+  addRow,
+  deleteColumn,
+  deleteRow,
+  deleteTable,
+  formatTable,
+  insertTable,
+  setAlign,
+  tableAt,
+} from "./table";
 
 export interface LinkHit {
   target: string;
@@ -28,6 +41,7 @@ export function editorContextMenu(
   view: EditorView,
   link: LinkHit | null,
   openLink: (link: LinkHit, newTab: boolean) => void,
+  livePreview: boolean,
 ): boolean {
   if (e.shiftKey) return false;
 
@@ -92,6 +106,7 @@ export function editorContextMenu(
     format("Inline Code", "code", "Mod-Shift-c", toggleWrap("`")),
     "separator",
     format("Insert Link", "link", "Mod-k", toggleWrap("[[", "]]")),
+    ...tableItems(view, livePreview),
     format("Toggle Checklist", "checklist", "Mod-Enter", toggleTask),
     "separator",
     {
@@ -106,4 +121,55 @@ export function editorContextMenu(
   );
   showMenu(e, items);
   return true;
+}
+
+/** The table actions for cell (at.row, at.col). `widget`: invoked from the
+ *  live-preview grid, which keeps focus in its cells. */
+function tableActions(view: EditorView, at: TableAt, widget: boolean): MenuItem[] {
+  const align = at.table.align[at.col];
+  const aligned = (label: string, value: Align): MenuItem => ({
+    label,
+    checked: align === value,
+    action: () => setAlign(view, at, value, widget),
+  });
+  const isHeader = at.row === 0;
+  return [
+    { label: "Add Row Above", icon: "row-above", disabled: isHeader, action: () => addRow(view, at, false, widget) },
+    { label: "Add Row Below", icon: "row-below", action: () => addRow(view, at, true, widget) },
+    { label: "Add Column Left", icon: "col-left", action: () => addColumn(view, at, false, widget) },
+    { label: "Add Column Right", icon: "col-right", action: () => addColumn(view, at, true, widget) },
+    "separator",
+    aligned("Align Left", "left"),
+    aligned("Align Center", "center"),
+    aligned("Align Right", "right"),
+    "separator",
+    widget
+      ? {
+          label: "Edit as Markdown",
+          icon: "code",
+          action: () => {
+            view.dispatch({ selection: { anchor: at.table.from }, scrollIntoView: true });
+            view.focus();
+          },
+        }
+      : { label: "Format Table", icon: "sparkle", action: () => formatTable(view, at) },
+    "separator",
+    { label: "Delete Row", destructive: true, disabled: isHeader, action: () => deleteRow(view, at, widget) },
+    { label: "Delete Column", destructive: true, disabled: at.table.align.length <= 1, action: () => deleteColumn(view, at, widget) },
+    { label: "Delete Table", icon: "trash", destructive: true, action: () => deleteTable(view, at) },
+  ];
+}
+
+/** Right-click on a cell of the live-preview grid. */
+export function tableMenu(e: MouseEvent, view: EditorView, at: TableAt, widget: boolean) {
+  showMenu(e, tableActions(view, at, widget));
+}
+
+/** In a table (source view): "Table ›". Elsewhere: "Insert Table ›" with a size grid. */
+function tableItems(view: EditorView, livePreview: boolean): MenuItem[] {
+  const at = tableAt(view.state, view.state.selection.main.head);
+  if (!at) {
+    return [{ label: "Insert Table", icon: "table", sizePicker: (cols, rows) => insertTable(view, cols, rows, livePreview) }];
+  }
+  return [{ label: "Table", icon: "table", submenu: tableActions(view, at, false) }];
 }

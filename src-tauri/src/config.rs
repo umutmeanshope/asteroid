@@ -12,10 +12,26 @@ use tauri::{AppHandle, Manager};
 
 use crate::state::{CmdResult, err};
 
+/// Where settings, recent vaults and sign-ins live. Debug builds (`npm run
+/// tauri dev`) use a separate `….dev` folder so testing never touches the
+/// installed app's setup; the first time, it starts from a copy of the
+/// release settings and recent vaults (sign-ins are not copied).
 pub fn config_dir(app: &AppHandle) -> CmdResult<PathBuf> {
-    let dir = app.path().app_config_dir().map_err(err)?;
+    let release = app.path().app_config_dir().map_err(err)?;
+    let dir = if cfg!(debug_assertions) { dev_dir(&release) } else { release };
     fs::create_dir_all(&dir).map_err(err)?;
     Ok(dir)
+}
+
+fn dev_dir(release: &std::path::Path) -> PathBuf {
+    let name = release.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    let dev = release.with_file_name(format!("{name}.dev"));
+    if !dev.exists() && fs::create_dir_all(&dev).is_ok() {
+        for file in [SETTINGS, RECENT] {
+            let _ = fs::copy(release.join(file), dev.join(file));
+        }
+    }
+    dev
 }
 
 pub fn read_json<T: DeserializeOwned>(app: &AppHandle, name: &str) -> Option<T> {

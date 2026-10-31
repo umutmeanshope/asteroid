@@ -92,6 +92,56 @@ export const editorTheme = EditorView.theme({
   ".cm-lp-math-block .katex": { fontSize: "1.12em" },
   ".cm-lp-math-src, .cm-lp-math-src-block": { fontFamily: "var(--font-mono)", fontSize: "0.92em" },
 
+  // Tables in live preview: an editable grid (tableWidget.ts).
+  ".cm-table-widget": {
+    margin: "4px 0",
+    overflowX: "auto",
+    fontFamily: "var(--font)",
+    fontSize: "0.95em",
+    lineHeight: "1.45",
+    cursor: "default",
+  },
+  ".cm-table-widget table": {
+    borderCollapse: "separate",
+    borderSpacing: "0",
+    border: "1px solid var(--separator-strong)",
+    borderRadius: "var(--r)",
+    overflow: "hidden",
+    minWidth: "40%",
+  },
+  ".cm-table-widget th, .cm-table-widget td": {
+    padding: "0",
+    minWidth: "90px",
+    borderBottom: "1px solid var(--separator)",
+    borderRight: "1px solid var(--separator)",
+    verticalAlign: "top",
+  },
+  ".cm-table-widget th:last-child, .cm-table-widget td:last-child": { borderRight: "0" },
+  ".cm-table-widget tr:last-child td": { borderBottom: "0" },
+  ".cm-table-widget th": { background: "var(--fill-3)", fontWeight: "600" },
+  ".cm-table-widget .cell": {
+    minHeight: "1.45em",
+    padding: "6px 12px",
+    outline: "none",
+    whiteSpace: "pre-wrap",
+    overflowWrap: "anywhere",
+    cursor: "text",
+    borderRadius: "2px",
+  },
+  ".cm-table-widget td:hover, .cm-table-widget th:hover": { background: "var(--fill-2)" },
+  ".cm-table-widget .cell.editing": {
+    background: "var(--surface)",
+    boxShadow: "inset 0 0 0 2px var(--accent)",
+  },
+  ".cm-table-widget .cell code": {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.88em",
+    padding: "0.1em 0.35em",
+    borderRadius: "5px",
+    background: "var(--code-bg)",
+  },
+  ".cm-table-widget .cell .link": { color: "var(--accent)" },
+
   // Embedded notes (![[Note]]) reuse the reading view's card.
   ".cm-lp-embed-note": { display: "block", padding: "2px 0", cursor: "text", whiteSpace: "normal" },
   ".cm-lp-embed-note.missing": { color: "var(--red)", fontSize: "0.9em" },

@@ -9,6 +9,7 @@ import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate
 import type { SyntaxNodeRef } from "@lezer/common";
 import { renderMathIn, renderTex } from "../math";
 import { mathSource, parseWikiLink } from "./markdownExt";
+import { tableWidgets } from "./tableWidget";
 
 export interface LivePreviewConfig {
   /** Hide markup and render widgets (false = styled source mode). */
@@ -475,7 +476,7 @@ function blockMath(config: LivePreviewConfig): Extension {
 }
 
 export function livePreview(config: LivePreviewConfig): Extension {
-  return [blockMath(config), plugin(config)];
+  return [blockMath(config), tableWidgets(config), plugin(config)];
 }
 
 function plugin(config: LivePreviewConfig) {

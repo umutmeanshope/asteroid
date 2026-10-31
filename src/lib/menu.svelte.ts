@@ -3,17 +3,22 @@
 
 import type { IconName } from "../components/Icon.svelte";
 
+interface ItemBase {
+  label: string;
+  icon?: IconName;
+  /** Shows a checkmark in the leading slot instead of the icon. */
+  checked?: boolean;
+  destructive?: boolean;
+  disabled?: boolean;
+  shortcut?: string;
+}
+
+/** An action, a submenu (one level deep), a size picker, or a separator. */
 export type MenuItem =
-  | {
-      label: string;
-      action: () => void;
-      icon?: IconName;
-      /** Shows a checkmark in the leading slot instead of the icon. */
-      checked?: boolean;
-      destructive?: boolean;
-      disabled?: boolean;
-      shortcut?: string;
-    }
+  | (ItemBase & { action: () => void; submenu?: undefined; sizePicker?: undefined })
+  | (ItemBase & { submenu: MenuItem[]; action?: undefined; sizePicker?: undefined })
+  /** Opens a grid to choose columns × rows, like a word processor's table button. */
+  | (ItemBase & { sizePicker: (cols: number, rows: number) => void; action?: undefined; submenu?: undefined })
   | "separator";
 
 export interface OpenMenu {

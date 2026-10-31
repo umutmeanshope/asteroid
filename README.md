@@ -28,7 +28,10 @@ vaults as they are.
 
 **Writing**
 - Live preview: Markdown renders as you type and shows its syntax only on the line you're editing
-- `[[Wikilinks]]` with autocomplete, `#tags`, callouts, task lists, tables and frontmatter properties
+- `[[Wikilinks]]` with autocomplete, `#tags`, callouts, task lists and frontmatter properties
+- Tables you edit like in a word processor: **Insert Table** lets you pick the size from a grid,
+  cells are typed into directly, <kbd>Tab</kbd>/<kbd>Enter</kbd> move between them, and rows,
+  columns and alignment are a right-click away — saved as plain Markdown tables
 - Embeds: `![[Note]]`, `![[Note#Heading]]` and `![[Note#^block]]` render inline; images too
 - Math with KaTeX: `$inline$` and `$$display$$`
 - Links follow along when you rename or move notes and folders
@@ -168,6 +171,10 @@ cargo test --workspace                  # Rust tests
 cargo clippy --workspace --all-targets  # lints
 npm run check                           # Svelte and TypeScript checks
 ```
+
+Development builds (`npm run tauri dev`) keep their own settings, recent vaults and sign-ins
+(`app.asteroid.notes.dev` in the config folder, titled "Asteroid Dev"), so testing never
+touches the installed app. The first run starts from a copy of the installed app's settings.
 
 ```
 crates/asteroid-core   Vault files, Markdown parsing, search index, link updates, rendering

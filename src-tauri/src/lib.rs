@@ -2,6 +2,8 @@
 //! web UI through commands and events. Kept thin so the same core can back
 //! the mobile apps.
 
+use tauri::Manager;
+
 mod commands;
 mod config;
 mod state;
@@ -16,6 +18,15 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(AppState::default())
+        .setup(|app| {
+            // Dev builds keep separate settings (see config::config_dir); say so.
+            if cfg!(debug_assertions)
+                && let Some(window) = app.get_webview_window("main")
+            {
+                let _ = window.set_title("Asteroid Dev");
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             commands::vault::recent_vaults,
             commands::vault::forget_recent_vault,

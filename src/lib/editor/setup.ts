@@ -10,6 +10,7 @@ import type { NoteSummary, TagCount } from "../types";
 import { displayName, isMac, parentOf } from "../util";
 import { toggleTask, toggleWrap } from "./commands";
 import { editorContextMenu } from "./contextMenu";
+import { nextCell, prevCell } from "./table";
 import { livePreview } from "./livePreview";
 import { Hashtag, MathSyntax, WikiLink, parseWikiLink } from "./markdownExt";
 import { editorHighlighting, editorTheme } from "./theme";
@@ -152,6 +153,8 @@ export function createEditor(parent: HTMLElement, opts: EditorOptions): EditorHa
         { key: "Mod-Shift-c", run: toggleWrap("`") },
         { key: "Mod-k", run: toggleWrap("[[", "]]") },
         { key: "Mod-Enter", run: toggleTask },
+        // In tables, Tab moves between cells (before indentWithTab).
+        { key: "Tab", run: nextCell, shift: prevCell },
         ...closeBracketsKeymap,
         ...completionKeymap,
         ...searchKeymap,
@@ -175,7 +178,7 @@ export function createEditor(parent: HTMLElement, opts: EditorOptions): EditorHa
           const link = el
             ? { target: el.dataset.lpTarget ?? href ?? "", external: !!href && /^[a-z][a-z0-9+.-]*:/i.test(href) }
             : pos == null ? null : linkAt(view.state, pos);
-          return editorContextMenu(e, view, link, (l, newTab) => opts.onOpenLink(l.target, { newTab, external: l.external }));
+          return editorContextMenu(e, view, link, (l, newTab) => opts.onOpenLink(l.target, { newTab, external: l.external }), opts.livePreview);
         },
         mousedown(e, view) {
           if (e.button !== 0) return false;
